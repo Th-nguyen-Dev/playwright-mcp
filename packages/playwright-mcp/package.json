@@ -1,10 +1,10 @@
 {
   "name": "@playwright/mcp",
   "version": "0.0.66",
-  "description": "Playwright Tools for MCP",
+  "description": "Playwright Tools for MCP - Enhanced with DOM State Management",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/microsoft/playwright-mcp.git"
+    "url": "git+https://github.com/Th-nguyen-Dev/playwright-mcp.git"
   },
   "homepage": "https://playwright.dev",
   "engines": {
@@ -16,13 +16,13 @@
   "license": "Apache-2.0",
   "scripts": {
     "lint": "node update-readme.js",
+    "build": "cd ../../playwright && node utils/build/build.js",
     "test": "playwright test",
     "ctest": "playwright test --project=chrome",
     "ftest": "playwright test --project=firefox",
     "wtest": "playwright test --project=webkit",
     "dtest": "MCP_IN_DOCKER=1 playwright test --project=chromium-docker",
-    "build": "echo OK",
-    "npm-publish": "npm run lint && npm run test && npm publish"
+    "npm-publish": "npm run lint && npm run build && npm run test && npm publish"
   },
   "exports": {
     "./package.json": "./package.json",
@@ -32,8 +32,11 @@
     }
   },
   "dependencies": {
-    "playwright": "1.59.0-alpha-1770400094000",
-    "playwright-core": "1.59.0-alpha-1770400094000"
+    "playwright": "file:../../playwright/packages/playwright",
+    "playwright-core": "file:../../playwright/packages/playwright-core"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
   },
   "bin": {
     "playwright-mcp": "cli.js"
