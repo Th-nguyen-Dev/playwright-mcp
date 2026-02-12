@@ -1,0 +1,33 @@
+{
+  "name": "@playwright/mcp-multiplexer",
+  "version": "0.0.1",
+  "description": "Multi-instance multiplexer for Playwright MCP",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "playwright test",
+    "lint": "tsc --noEmit"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/src/multiplexer-server.d.ts",
+      "default": "./dist/src/multiplexer-server.js"
+    }
+  },
+  "bin": {
+    "playwright-mcp-multiplexer": "./dist/cli.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.25.2",
+    "@playwright/mcp": "0.0.66"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.59.0-alpha-1770400094000",
+    "@types/node": "^24.3.0",
+    "typescript": "^5.8.0"
+  }
+}
