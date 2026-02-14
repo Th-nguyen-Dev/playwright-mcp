@@ -15,6 +15,11 @@ This package provides MCP interface into Playwright. If you are using a **coding
 - **Fast and lightweight**. Uses Playwright's accessibility tree, not pixel-based input.
 - **LLM-friendly**. No vision models needed, operates purely on structured data.
 - **Deterministic tool application**. Avoids ambiguity common with screenshot-based approaches.
+- **File-based DOM state**. After each action, DOM state files are written to `.playwright-mcp/browser-state/` for detailed page inspection and change tracking.
+
+### AI Agent Guide
+
+If you're an AI agent using this MCP server, see [AI Agent Guide](docs/AI-AGENT-GUIDE.md) for comprehensive instructions on using DOM state files, cross-referencing refs between the aria tree and DOM, reading diffs, and effective usage patterns.
 
 ### Requirements
 - Node.js 18 or newer

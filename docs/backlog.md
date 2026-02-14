@@ -70,7 +70,7 @@ Implementation backlog for the file-based DOM state system for the Playwright MC
 
 | Ticket | Title | Priority | Effort | Status | Assignee |
 |--------|-------|----------|--------|--------|----------|
-| [TICKET-017](tickets/TICKET-017.md) | Update agent instructions for DOM state file usage | P2-Medium | M | TODO | -- |
+| [TICKET-017](tickets/TICKET-017.md) | Update agent instructions for DOM state file usage | P2-Medium | M | COMPLETED | Claude |
 | [TICKET-018](tickets/TICKET-018.md) | AI agent efficiency evaluation -- does DOM state improve task completion? | P2-Medium | XL | TODO | -- |
 
 ## Dependency Graph
