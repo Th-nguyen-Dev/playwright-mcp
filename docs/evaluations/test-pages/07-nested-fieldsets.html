@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Details - Test Page 07</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f7fafc;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 { font-size: 1.5rem; margin-bottom: 24px; color: #1a202c; }
+        fieldset {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        legend {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #2d3748;
+            padding: 0 8px;
+        }
+        .field { margin-bottom: 14px; }
+        .field:last-child { margin-bottom: 0; }
+        label { display: block; font-weight: 600; margin-bottom: 4px; color: #4a5568; font-size: 0.85rem; }
+        input, select {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        input:focus, select:focus { border-color: #4299e1; outline: none; box-shadow: 0 0 0 3px rgba(66,153,225,0.15); }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #2b6cb0;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        button:hover { background: #2c5282; }
+        .success { display: none; padding: 16px; background: #c6f6d5; border-radius: 8px; text-align: center; color: #22543d; font-weight: 600; margin-top: 16px; }
+        .success.visible { display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Detailed Contact Form</h1>
+        <form id="contact-form">
+            <fieldset>
+                <legend>Personal Information</legend>
+                <div class="field">
+                    <label for="personal-first">First Name</label>
+                    <input type="text" id="personal-first" name="personal_first_name" required>
+                </div>
+                <div class="field">
+                    <label for="personal-last">Last Name</label>
+                    <input type="text" id="personal-last" name="personal_last_name" required>
+                </div>
+                <div class="field">
+                    <label for="personal-phone">Phone</label>
+                    <input type="tel" id="personal-phone" name="personal_phone" required placeholder="(555) 111-2222">
+                </div>
+                <div class="field">
+                    <label for="personal-email">Email</label>
+                    <input type="email" id="personal-email" name="personal_email" required placeholder="you@example.com">
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Emergency Contact</legend>
+                <div class="field">
+                    <label for="emergency-name">Contact Name</label>
+                    <input type="text" id="emergency-name" name="emergency_name" required>
+                </div>
+                <div class="field">
+                    <label for="emergency-relationship">Relationship</label>
+                    <select id="emergency-relationship" name="emergency_relationship" required>
+                        <option value="">-- Select --</option>
+                        <option value="spouse">Spouse</option>
+                        <option value="parent">Parent</option>
+                        <option value="sibling">Sibling</option>
+                        <option value="child">Child</option>
+                        <option value="friend">Friend</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="emergency-phone">Phone</label>
+                    <input type="tel" id="emergency-phone" name="emergency_phone" required placeholder="(555) 333-4444">
+                </div>
+                <div class="field">
+                    <label for="emergency-email">Email</label>
+                    <input type="email" id="emergency-email" name="emergency_email" placeholder="contact@example.com">
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Medical Information</legend>
+                <div class="field">
+                    <label for="blood-type">Blood Type</label>
+                    <select id="blood-type" name="blood_type" required>
+                        <option value="">-- Select --</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="allergies">Allergies</label>
+                    <input type="text" id="allergies" name="allergies" placeholder="None, or list allergies">
+                </div>
+            </fieldset>
+
+            <button type="submit">Submit Contact Information</button>
+        </form>
+        <div class="success" id="success-msg">Contact information saved successfully!</div>
+    </div>
+    <script>
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            document.getElementById('success-msg').classList.add('visible');
+        });
+    </script>
+</body>
+</html>

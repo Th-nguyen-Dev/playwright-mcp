@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration - Test Page 02</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .help-text {
+            display: block;
+            color: #666;
+            font-size: 13px;
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #f5576c;
+        }
+
+        button {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(245, 87, 108, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .success-message {
+            display: none;
+            background: #10b981;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        .recovery-group {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Account Registration</h1>
+        <p class="subtitle">Create your new account by completing the form below.</p>
+
+        <form id="registrationForm">
+            <div class="form-group">
+                <label for="accountId">ID</label>
+                <input type="text"
+                       id="accountId"
+                       name="accountId"
+                       required
+                       aria-describedby="accountId-help">
+                <span id="accountId-help" class="help-text">
+                    Choose a unique account identifier. Letters and numbers only, 5-20 characters.
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="accessCode">Code</label>
+                <input type="text"
+                       id="accessCode"
+                       name="accessCode"
+                       required
+                       pattern="[A-Z]{3}[0-9]{4}"
+                       aria-describedby="accessCode-help">
+                <span id="accessCode-help" class="help-text">
+                    Enter your access code in the format: 3 uppercase letters followed by 4 numbers (example: ABC1234).
+                </span>
+            </div>
+
+            <div class="form-group">
+                <label for="recoveryMethod">Recovery</label>
+                <select id="recoveryMethod"
+                        name="recoveryMethod"
+                        required
+                        aria-describedby="recoveryMethod-help">
+                    <option value="">Select method...</option>
+                    <option value="email">Email</option>
+                    <option value="sms">SMS</option>
+                    <option value="security-question">Security Question</option>
+                </select>
+                <span id="recoveryMethod-help" class="help-text">
+                    Choose how you want to recover your account if you forget your password.
+                </span>
+
+                <div class="recovery-group" id="recoveryEmailGroup" style="display: none;">
+                    <label for="recoveryEmail">Recovery Address</label>
+                    <input type="email"
+                           id="recoveryEmail"
+                           name="recoveryEmail"
+                           aria-describedby="recoveryEmail-help">
+                    <span id="recoveryEmail-help" class="help-text">
+                        We'll send account recovery links to this email address.
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmCode">Verification</label>
+                <input type="text"
+                       id="confirmCode"
+                       name="confirmCode"
+                       required
+                       aria-describedby="confirmCode-help">
+                <span id="confirmCode-help" class="help-text">
+                    Enter the confirmation code: <strong>CONF2026</strong>
+                </span>
+            </div>
+
+            <button type="submit">Create Account</button>
+        </form>
+
+        <div class="success-message" id="successMessage">
+            Account created successfully! Welcome aboard.
+        </div>
+    </div>
+
+    <script>
+        const recoveryMethod = document.getElementById('recoveryMethod');
+        const recoveryEmailGroup = document.getElementById('recoveryEmailGroup');
+        const recoveryEmail = document.getElementById('recoveryEmail');
+
+        recoveryMethod.addEventListener('change', function() {
+            if (this.value === 'email') {
+                recoveryEmailGroup.style.display = 'block';
+                recoveryEmail.required = true;
+            } else {
+                recoveryEmailGroup.style.display = 'none';
+                recoveryEmail.required = false;
+            }
+        });
+
+        document.getElementById('registrationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+
+            console.log('Form submitted:', data);
+
+            this.style.display = 'none';
+            document.getElementById('successMessage').classList.add('show');
+        });
+    </script>
+</body>
+</html>

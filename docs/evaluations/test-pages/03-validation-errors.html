@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Form with Validation - Test Page 03</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        input.invalid {
+            border-color: #ef4444;
+        }
+
+        .error-message {
+            display: none;
+            color: #ef4444;
+            font-size: 13px;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        button {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(79, 172, 254, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .success-message {
+            display: none;
+            background: #10b981;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 20px;
+            font-weight: 600;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Membership Application</h1>
+        <p class="subtitle">Please fill out all fields to apply for membership.</p>
+
+        <form id="applicationForm">
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text"
+                       id="name"
+                       name="name"
+                       required
+                       aria-describedby="name-error">
+                <span id="name-error" class="error-message" role="alert"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="text"
+                       id="email"
+                       name="email"
+                       required
+                       aria-describedby="email-error">
+                <span id="email-error" class="error-message" role="alert"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="age">Age</label>
+                <input type="number"
+                       id="age"
+                       name="age"
+                       required
+                       aria-describedby="age-error">
+                <span id="age-error" class="error-message" role="alert"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="website">Website URL</label>
+                <input type="text"
+                       id="website"
+                       name="website"
+                       required
+                       aria-describedby="website-error">
+                <span id="website-error" class="error-message" role="alert"></span>
+            </div>
+
+            <button type="submit">Submit Application</button>
+        </form>
+
+        <div class="success-message" id="successMessage">
+            Application submitted successfully! We'll be in touch soon.
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('applicationForm');
+        const fields = {
+            name: document.getElementById('name'),
+            email: document.getElementById('email'),
+            age: document.getElementById('age'),
+            website: document.getElementById('website')
+        };
+
+        const errors = {
+            name: document.getElementById('name-error'),
+            email: document.getElementById('email-error'),
+            age: document.getElementById('age-error'),
+            website: document.getElementById('website-error')
+        };
+
+        function clearErrors() {
+            Object.keys(fields).forEach(key => {
+                fields[key].classList.remove('invalid');
+                fields[key].removeAttribute('aria-invalid');
+                errors[key].textContent = '';
+                errors[key].classList.remove('show');
+            });
+        }
+
+        function validateForm(data) {
+            clearErrors();
+            let isValid = true;
+
+            if (!data.name || data.name.trim().length === 0) {
+                fields.name.classList.add('invalid');
+                fields.name.setAttribute('aria-invalid', 'true');
+                errors.name.textContent = 'Please enter your full name.';
+                errors.name.classList.add('show');
+                isValid = false;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(data.email)) {
+                fields.email.classList.add('invalid');
+                fields.email.setAttribute('aria-invalid', 'true');
+                errors.email.textContent = 'Please enter a valid email address (e.g., user@example.com).';
+                errors.email.classList.add('show');
+                isValid = false;
+            }
+
+            const ageNum = parseInt(data.age, 10);
+            if (isNaN(ageNum) || ageNum < 18 || ageNum > 120) {
+                fields.age.classList.add('invalid');
+                fields.age.setAttribute('aria-invalid', 'true');
+                errors.age.textContent = 'Age must be between 18 and 120.';
+                errors.age.classList.add('show');
+                isValid = false;
+            }
+
+            if (!data.website.startsWith('https://') && !data.website.startsWith('http://')) {
+                fields.website.classList.add('invalid');
+                fields.website.setAttribute('aria-invalid', 'true');
+                errors.website.textContent = 'Website URL must start with https:// or http://';
+                errors.website.classList.add('show');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
+
+            if (validateForm(data)) {
+                console.log('Form submitted:', data);
+                this.style.display = 'none';
+                document.getElementById('successMessage').classList.add('show');
+            } else {
+                console.log('Validation failed');
+            }
+        });
+    </script>
+</body>
+</html>
