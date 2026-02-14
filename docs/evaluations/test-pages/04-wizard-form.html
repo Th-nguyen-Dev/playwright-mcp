@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Wizard - Test Page 04</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+
+        .progress-step {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border-bottom: 3px solid #e0e0e0;
+            color: #999;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .progress-step.active {
+            border-bottom-color: #fa709a;
+            color: #fa709a;
+        }
+
+        .progress-step.completed {
+            border-bottom-color: #10b981;
+            color: #10b981;
+        }
+
+        .wizard-page {
+            display: none;
+        }
+
+        .wizard-page.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #fa709a;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px 30px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+
+        button.secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .review-section {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .review-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .review-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .review-item:last-child {
+            border-bottom: none;
+        }
+
+        .review-label {
+            color: #666;
+            font-weight: 600;
+        }
+
+        .review-value {
+            color: #333;
+        }
+
+        .success-message {
+            display: none;
+            background: #10b981;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Registration Wizard</h1>
+        <p class="subtitle">Complete all steps to register your account.</p>
+
+        <div class="progress-bar">
+            <div class="progress-step active" id="step1-indicator">1. Personal Info</div>
+            <div class="progress-step" id="step2-indicator">2. Preferences</div>
+            <div class="progress-step" id="step3-indicator">3. Review</div>
+        </div>
+
+        <form id="wizardForm">
+            <div class="wizard-page active" id="page1">
+                <h2>Personal Information</h2>
+                <div class="form-group">
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" name="firstName" required>
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" name="lastName" required>
+                </div>
+                <div class="form-group">
+                    <label for="dob">Date of Birth</label>
+                    <input type="date" id="dob" name="dob" required>
+                </div>
+                <div class="button-group">
+                    <button type="button" class="primary" id="next1">Next</button>
+                </div>
+            </div>
+
+            <div class="wizard-page" id="page2">
+                <h2>Preferences</h2>
+                <div class="form-group">
+                    <label for="language">Preferred Language</label>
+                    <select id="language" name="language" required>
+                        <option value="">Select language...</option>
+                        <option value="English">English</option>
+                        <option value="Spanish">Spanish</option>
+                        <option value="French">French</option>
+                        <option value="German">German</option>
+                        <option value="Chinese">Chinese</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="newsletter" name="newsletter" value="yes">
+                        <label for="newsletter">Subscribe to newsletter</label>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button type="button" class="secondary" id="prev2">Previous</button>
+                    <button type="button" class="primary" id="next2">Next</button>
+                </div>
+            </div>
+
+            <div class="wizard-page" id="page3">
+                <h2>Review Your Information</h2>
+                <div class="review-section">
+                    <h3>Personal Information</h3>
+                    <div class="review-item">
+                        <span class="review-label">First Name:</span>
+                        <span class="review-value" id="review-firstName"></span>
+                    </div>
+                    <div class="review-item">
+                        <span class="review-label">Last Name:</span>
+                        <span class="review-value" id="review-lastName"></span>
+                    </div>
+                    <div class="review-item">
+                        <span class="review-label">Date of Birth:</span>
+                        <span class="review-value" id="review-dob"></span>
+                    </div>
+                </div>
+                <div class="review-section">
+                    <h3>Preferences</h3>
+                    <div class="review-item">
+                        <span class="review-label">Language:</span>
+                        <span class="review-value" id="review-language"></span>
+                    </div>
+                    <div class="review-item">
+                        <span class="review-label">Newsletter:</span>
+                        <span class="review-value" id="review-newsletter"></span>
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button type="button" class="secondary" id="prev3">Previous</button>
+                    <button type="submit" class="primary">Submit</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="success-message" id="successMessage">
+            Registration completed successfully! Welcome to our platform.
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        const formData = {};
+
+        function showPage(pageNum) {
+            document.querySelectorAll('.wizard-page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.progress-step').forEach(step => step.classList.remove('active'));
+
+            document.getElementById('page' + pageNum).classList.add('active');
+            document.getElementById('step' + pageNum + '-indicator').classList.add('active');
+
+            for (let i = 1; i < pageNum; i++) {
+                document.getElementById('step' + i + '-indicator').classList.add('completed');
+            }
+
+            currentPage = pageNum;
+        }
+
+        function savePageData(pageNum) {
+            if (pageNum === 1) {
+                formData.firstName = document.getElementById('firstName').value;
+                formData.lastName = document.getElementById('lastName').value;
+                formData.dob = document.getElementById('dob').value;
+            } else if (pageNum === 2) {
+                formData.language = document.getElementById('language').value;
+                formData.newsletter = document.getElementById('newsletter').checked;
+            }
+        }
+
+        function updateReview() {
+            document.getElementById('review-firstName').textContent = formData.firstName || '';
+            document.getElementById('review-lastName').textContent = formData.lastName || '';
+            document.getElementById('review-dob').textContent = formData.dob || '';
+            document.getElementById('review-language').textContent = formData.language || '';
+            document.getElementById('review-newsletter').textContent = formData.newsletter ? 'Yes' : 'No';
+        }
+
+        document.getElementById('next1').addEventListener('click', function() {
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const dob = document.getElementById('dob').value;
+
+            if (firstName && lastName && dob) {
+                savePageData(1);
+                showPage(2);
+            } else {
+                alert('Please fill out all fields.');
+            }
+        });
+
+        document.getElementById('prev2').addEventListener('click', function() {
+            savePageData(2);
+            showPage(1);
+        });
+
+        document.getElementById('next2').addEventListener('click', function() {
+            const language = document.getElementById('language').value;
+
+            if (language) {
+                savePageData(2);
+                updateReview();
+                showPage(3);
+            } else {
+                alert('Please select a language.');
+            }
+        });
+
+        document.getElementById('prev3').addEventListener('click', function() {
+            showPage(2);
+        });
+
+        document.getElementById('wizardForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            console.log('Final form data:', formData);
+            this.style.display = 'none';
+            document.querySelector('.progress-bar').style.display = 'none';
+            document.getElementById('successMessage').classList.add('show');
+        });
+    </script>
+</body>
+</html>
