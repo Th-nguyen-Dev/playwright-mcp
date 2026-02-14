@@ -63,7 +63,7 @@ Implementation backlog for the file-based DOM state system for the Playwright MC
 
 | Ticket | Title | Priority | Effort | Status | Assignee |
 |--------|-------|----------|--------|--------|----------|
-| [TICKET-015](tickets/TICKET-015.md) | Multiplexer support -- pass DOM state env vars to child instances | P1-High | M | TODO | -- |
+| [TICKET-015](tickets/TICKET-015.md) | Multiplexer support -- pass DOM state env vars to child instances | P1-High | M | COMPLETED | Claude |
 | [TICKET-016](tickets/TICKET-016.md) | Multiplexer integration tests -- per-instance file isolation | P1-High | M | TODO | -- |
 
 ### Phase 10: Agent & Evaluation (depends on phases 6-8)
