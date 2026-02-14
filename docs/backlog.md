@@ -51,7 +51,7 @@ Implementation backlog for the file-based DOM state system for the Playwright MC
 | [TICKET-010](tickets/TICKET-010.md) | Unit tests for prettyPrintHtml (domPrettyPrint.ts) | P1-High | M | TODO | -- |
 | [TICKET-011](tickets/TICKET-011.md) | Unit tests for DomState diffing and file I/O (domState.ts) | P1-High | M | TODO | -- |
 | [TICKET-012](tickets/TICKET-012.md) | Integration tests -- end-to-end tool call to file on disk | P1-High | L | TODO | -- |
-| [TICKET-014](tickets/TICKET-014.md) | Integration tests -- iframe stitching and shadow DOM | P1-High | M | TODO | -- |
+| [TICKET-014](tickets/TICKET-014.md) | Integration tests -- iframe stitching and shadow DOM | P1-High | M | COMPLETED | Claude |
 
 ### Phase 8: Performance (depends on TICKET-012)
 
