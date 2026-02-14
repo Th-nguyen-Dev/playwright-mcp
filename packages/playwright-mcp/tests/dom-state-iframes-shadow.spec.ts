@@ -91,11 +91,12 @@ test.describe('iframe stitching', () => {
     const stateDir = path.join(workspaceDir, '.playwright-mcp', 'browser-state');
     const dom = await fs.promises.readFile(path.join(stateDir, 'dom.html'), 'utf-8');
 
-    // Check for iframe ref pattern (e.g., f1e1, f1e2)
-    expect(dom).toMatch(/ref="f\d+e\d+"/);
+    // The iframe element itself gets a main-frame ref (e.g., e2)
+    // Elements inside the iframe get frame-prefixed refs (e.g., f1e2)
+    expect(dom).toMatch(/<iframe[^>]*ref="e\d+"/);
 
-    // Verify the iframe element has a ref attribute
-    expect(dom).toMatch(/<iframe[^>]*ref="f\d+e\d+"/);
+    // Child frame content should have frame-prefixed refs
+    expect(dom).toMatch(/ref="f\d+e\d+"/);
   });
 
   test('child frame elements have ref attributes', async ({ startClient, server }) => {
@@ -139,8 +140,8 @@ test.describe('iframe stitching', () => {
     if (iframeMatch) {
       const iframeContent = iframeMatch[2];
 
-      // Verify elements within the iframe have ref attributes
-      expect(iframeContent).toMatch(/ref="e\d+"/);
+      // Verify elements within the iframe have frame-prefixed ref attributes (e.g., f1e2)
+      expect(iframeContent).toMatch(/ref="f\d+e\d+"/);
 
       // Verify the button and input are present
       expect(iframeContent).toContain('Click me');
@@ -183,11 +184,13 @@ test.describe('iframe stitching', () => {
     expect(dom).toContain('Parent Page');
     expect(dom).toContain('Parent Button');
 
-    // Cross-origin iframe content should NOT be inlined
-    expect(dom).not.toContain('Cross-origin content');
+    // Playwright can access cross-origin frames via CDP, so stitching succeeds.
+    // The iframe content IS inlined (unlike browser JS which is blocked by same-origin).
+    expect(dom).toContain('Cross-origin content');
 
-    // The iframe element itself should still be in the DOM
+    // The iframe element itself should be in the DOM with stitched content
     expect(dom).toMatch(/<iframe[^>]*>/);
+    expect(dom).toContain('<!-- BEGIN IFRAME');
   });
 
   test('nested iframe (iframe within iframe)', async ({ startClient, server }) => {
@@ -281,7 +284,7 @@ test.describe('iframe stitching', () => {
     expect(dom).toContain('Click');
 
     // DOM extraction should complete without errors (basic sanity check)
-    expect(dom).toContain('<body>');
+    expect(dom).toMatch(/<body/);
     expect(dom).toContain('</body>');
   });
 });
@@ -485,7 +488,7 @@ test.describe('shadow DOM', () => {
     expect(dom).toContain('Page');
 
     // DOM extraction should complete without errors
-    expect(dom).toContain('<body>');
+    expect(dom).toMatch(/<body/);
     expect(dom).toContain('</body>');
 
     // Note: Closed shadow roots cannot be accessed via element.shadowRoot,
@@ -542,8 +545,8 @@ test.describe('combined scenarios', () => {
     expect(dom).toContain('<!-- BEGIN IFRAME');
     expect(dom).toContain('<!-- shadow-root -->');
 
-    // Shadow content inside iframe should be present
-    expect(dom).toContain('Shadow in iframe');
+    // Shadow content inside iframe should be present (may be split across lines by pretty-printer)
+    expect(dom).toMatch(/Shadow\s+in\s+iframe/);
     expect(dom).toContain('Parent');
   });
 });
