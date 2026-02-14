@@ -2,6 +2,7 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import {
   ListToolsRequestSchema,
   CallToolRequestSchema,
+  InitializedNotificationSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 
@@ -40,6 +41,36 @@ export class MultiplexerServer {
 
   async connect(transport: Transport): Promise<void> {
     await this.server.connect(transport);
+
+    // After connection, request workspace roots from the client
+    // The MCP client may have declared roots during initialization
+    try {
+      const rootsResult = await this.server.listRoots();
+      if (rootsResult.roots && rootsResult.roots.length > 0) {
+        const firstRoot = rootsResult.roots[0];
+        if (firstRoot.uri) {
+          // Convert file:// URI to path
+          const workspaceRoot = this.uriToPath(firstRoot.uri);
+          this.instanceManager.setWorkspaceRoot(workspaceRoot);
+        }
+      }
+    } catch {
+      // Client may not support roots - that's okay, DOM state will be disabled
+    }
+  }
+
+  private uriToPath(uri: string): string {
+    if (uri.startsWith('file://')) {
+      // Remove file:// prefix and decode URI components
+      let path = uri.slice(7);
+      // On Windows, file:///C:/... becomes C:/...
+      // On Unix, file:///home/... becomes /home/...
+      if (process.platform === 'win32' && path.startsWith('/')) {
+        path = path.slice(1);
+      }
+      return decodeURIComponent(path);
+    }
+    return uri;
   }
 
   async close(): Promise<void> {

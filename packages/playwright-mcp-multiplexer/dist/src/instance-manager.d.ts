@@ -5,7 +5,13 @@ export declare class InstanceManager {
     private configFiles;
     private nextId;
     private config;
+    private workspaceRoot;
     constructor(config?: MultiplexerConfig);
+    /**
+     * Set the workspace root path from the MCP client's roots.
+     * Called by the multiplexer server during initialization.
+     */
+    setWorkspaceRoot(workspaceRoot: string | undefined): void;
     private resolveDefaultCliPath;
     create(instanceConfig?: InstanceConfig): Promise<ManagedInstance>;
     get(id: string): ManagedInstance | undefined;

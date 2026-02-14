@@ -8,6 +8,7 @@ export declare class MultiplexerServer {
     private authManager;
     constructor(config?: MultiplexerConfig);
     connect(transport: Transport): Promise<void>;
+    private uriToPath;
     close(): Promise<void>;
     private registerHandlers;
     private discoverTools;

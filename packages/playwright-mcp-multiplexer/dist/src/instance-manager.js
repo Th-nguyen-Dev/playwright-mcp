@@ -27,6 +27,7 @@ export class InstanceManager {
     configFiles = new Map(); // instanceId → temp config file path
     nextId = 1;
     config;
+    workspaceRoot;
     constructor(config = {}) {
         this.config = {
             maxInstances: config.maxInstances ?? 10,
@@ -37,6 +38,13 @@ export class InstanceManager {
             userDataDir: config.userDataDir ?? '',
             profileName: config.profileName ?? 'Default',
         };
+    }
+    /**
+     * Set the workspace root path from the MCP client's roots.
+     * Called by the multiplexer server during initialization.
+     */
+    setWorkspaceRoot(workspaceRoot) {
+        this.workspaceRoot = workspaceRoot;
     }
     resolveDefaultCliPath() {
         // Resolve the sibling @playwright/mcp package's cli.js
@@ -70,14 +78,21 @@ export class InstanceManager {
         };
         this.instances.set(id, instance);
         try {
+            // Build environment for child process
+            const env = {
+                ...process.env,
+                DEBUG: process.env.DEBUG ?? '',
+                PW_DOM_STATE_INSTANCE_ID: id,
+            };
+            // Only set workspace env var if we have a workspace root
+            if (this.workspaceRoot) {
+                env.PW_DOM_STATE_WORKSPACE = this.workspaceRoot;
+            }
             const transport = new StdioClientTransport({
                 command: 'node',
                 args: [this.config.cliPath, ...args],
                 stderr: 'pipe',
-                env: {
-                    ...process.env,
-                    DEBUG: process.env.DEBUG ?? '',
-                },
+                env,
             });
             const client = new Client({
                 name: `multiplexer-${id}`,

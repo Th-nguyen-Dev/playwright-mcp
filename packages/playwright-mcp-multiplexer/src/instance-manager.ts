@@ -32,6 +32,7 @@ export class InstanceManager {
   private configFiles = new Map<string, string>(); // instanceId → temp config file path
   private nextId = 1;
   private config: Required<MultiplexerConfig>;
+  private workspaceRoot: string | undefined;
 
   constructor(config: MultiplexerConfig = {}) {
     this.config = {
@@ -43,6 +44,14 @@ export class InstanceManager {
       userDataDir: config.userDataDir ?? '',
       profileName: config.profileName ?? 'Default',
     };
+  }
+
+  /**
+   * Set the workspace root path from the MCP client's roots.
+   * Called by the multiplexer server during initialization.
+   */
+  setWorkspaceRoot(workspaceRoot: string | undefined): void {
+    this.workspaceRoot = workspaceRoot;
   }
 
   private resolveDefaultCliPath(): string {
@@ -82,14 +91,23 @@ export class InstanceManager {
     this.instances.set(id, instance);
 
     try {
+      // Build environment for child process
+      const env: Record<string, string> = {
+        ...process.env,
+        DEBUG: process.env.DEBUG ?? '',
+        PW_DOM_STATE_INSTANCE_ID: id,
+      };
+
+      // Only set workspace env var if we have a workspace root
+      if (this.workspaceRoot) {
+        env.PW_DOM_STATE_WORKSPACE = this.workspaceRoot;
+      }
+
       const transport = new StdioClientTransport({
         command: 'node',
         args: [this.config.cliPath, ...args],
         stderr: 'pipe',
-        env: {
-          ...process.env,
-          DEBUG: process.env.DEBUG ?? '',
-        },
+        env,
       });
 
       const client = new Client({
