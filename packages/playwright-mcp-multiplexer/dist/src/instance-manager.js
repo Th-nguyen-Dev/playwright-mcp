@@ -82,11 +82,15 @@ export class InstanceManager {
             const env = {
                 ...process.env,
                 DEBUG: process.env.DEBUG ?? '',
-                PW_DOM_STATE_INSTANCE_ID: id,
             };
-            // Only set workspace env var if we have a workspace root
-            if (this.workspaceRoot) {
-                env.PW_DOM_STATE_WORKSPACE = this.workspaceRoot;
+            // DOM state toggle: explicitly disable or enable per instance
+            if (instanceConfig.domState === false) {
+                env.PW_DOM_STATE_DISABLED = '1';
+            }
+            else {
+                env.PW_DOM_STATE_INSTANCE_ID = id;
+                if (this.workspaceRoot)
+                    env.PW_DOM_STATE_WORKSPACE = this.workspaceRoot;
             }
             const transport = new StdioClientTransport({
                 command: 'node',

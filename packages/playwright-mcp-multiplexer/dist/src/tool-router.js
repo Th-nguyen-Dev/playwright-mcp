@@ -60,6 +60,7 @@ export class ToolRouter {
                 browser: args.browser,
                 storageState: args.storageState,
                 userDataDir: args.userDataDir,
+                domState: args.domState,
             });
             const effectiveConfig = this.instanceManager.getConfig();
             const browser = instance.config.browser ?? effectiveConfig.defaultBrowser;
@@ -90,7 +91,8 @@ export class ToolRouter {
             const age = Math.round((Date.now() - inst.createdAt) / 1000);
             const browser = inst.config.browser ?? effectiveConfig.defaultBrowser;
             const headless = inst.config.headless ?? effectiveConfig.defaultHeadless;
-            return `- ${inst.id}: status=${inst.status}, browser=${browser}, ${headless ? 'headless' : 'headed'}, age=${age}s`;
+            const domState = inst.config.domState !== false ? 'on' : 'off';
+            return `- ${inst.id}: status=${inst.status}, browser=${browser}, ${headless ? 'headless' : 'headed'}, domState=${domState}, age=${age}s`;
         });
         return {
             content: [{ type: 'text', text: `Active instances (${instances.length}):\n${lines.join('\n')}` }],

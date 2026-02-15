@@ -12,6 +12,7 @@ const MANAGEMENT_TOOLS: Tool[] = [
         browser: { type: 'string', enum: ['chrome', 'chromium', 'firefox', 'webkit'], description: 'Browser type (default: from server config)' },
         storageState: { type: 'string', description: 'Path to a storageState JSON file for pre-authenticated sessions' },
         userDataDir: { type: 'string', description: 'Path to a Chrome user data directory to copy auth state from (overrides default)' },
+        domState: { type: 'boolean', description: 'Enable DOM state file output (default: true). Set to false to disable DOM/diff file generation for this instance.' },
       },
     },
   },

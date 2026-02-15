@@ -111,6 +111,66 @@ test.describe('DOM State Environment Variables', () => {
     }
   });
 
+  test('should disable DOM state env vars when domState: false', async () => {
+    const transport = new StdioClientTransport({
+      command: 'node',
+      args: [CLI_PATH, '--headless'],
+      stderr: 'pipe',
+    });
+
+    const client = new Client({
+      name: 'test-client',
+      version: '1.0.0',
+    });
+
+    try {
+      await client.connect(transport);
+
+      // Create instance with domState disabled
+      const createResult = await client.callTool({
+        name: 'instance_create',
+        arguments: { domState: false },
+      });
+
+      expect(createResult.isError).toBeFalsy();
+      const createText = (createResult.content as Array<{ text: string }>)[0].text;
+      const instanceId = createText.match(/"(inst-\d+)"/)![1];
+
+      // Navigate and verify the instance works (just no DOM state files)
+      const navResult = await client.callTool({
+        name: 'browser_navigate',
+        arguments: {
+          instanceId,
+          url: 'data:text/html,<h1>No DOM State</h1>',
+        },
+      });
+
+      expect(navResult.isError).toBeFalsy();
+      const navText = (navResult.content as Array<{ text: string }>)[0].text;
+
+      // Response should NOT contain "Browser State" section since DOM state is disabled
+      expect(navText).not.toContain('Browser State');
+
+      // List instances — should show domState=off
+      const listResult = await client.callTool({
+        name: 'instance_list',
+        arguments: {},
+      });
+      const listText = (listResult.content as Array<{ text: string }>)[0].text;
+      expect(listText).toContain('domState=off');
+
+      await client.callTool({
+        name: 'instance_close_all',
+        arguments: {},
+      });
+
+      await client.close();
+    } catch (error) {
+      await client.close();
+      throw error;
+    }
+  });
+
   test('should not set env vars if no workspace root is available', async () => {
     // Client connects without declaring roots
     const transport = new StdioClientTransport({

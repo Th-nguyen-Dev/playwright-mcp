@@ -19,6 +19,7 @@ export interface InstanceConfig {
   storageState?: string;
   userDataDir?: string;
   args?: string[];
+  domState?: boolean;
 }
 
 export interface MultiplexerConfig {
