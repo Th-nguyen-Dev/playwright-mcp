@@ -72,17 +72,29 @@ export class ToolRouter {
         browser: args.browser as string | undefined,
         storageState: args.storageState as string | undefined,
         userDataDir: args.userDataDir as string | undefined,
+        cdpEndpoint: args.cdpEndpoint as string | undefined,
+        extension: args.extension as boolean | undefined,
         domState: args.domState as boolean | undefined,
       });
 
       const effectiveConfig = this.instanceManager.getConfig();
-      const browser = instance.config.browser ?? effectiveConfig.defaultBrowser;
-      const headless = instance.config.headless ?? effectiveConfig.defaultHeadless;
+      const useExtension = instance.config.extension ?? effectiveConfig.extension;
+      const cdpEndpoint = instance.config.cdpEndpoint || effectiveConfig.cdpEndpoint;
+      let description: string;
+      if (useExtension) {
+        description = `Created browser instance "${instance.id}" (extension)`;
+      } else if (cdpEndpoint) {
+        description = `Created browser instance "${instance.id}" (CDP: ${cdpEndpoint})`;
+      } else {
+        const browser = instance.config.browser ?? effectiveConfig.defaultBrowser;
+        const headless = instance.config.headless ?? effectiveConfig.defaultHeadless;
+        description = `Created browser instance "${instance.id}" (${browser}, ${headless ? 'headless' : 'headed'})`;
+      }
 
       return {
         content: [{
           type: 'text',
-          text: `Created browser instance "${instance.id}" (${browser}, ${headless ? 'headless' : 'headed'})`,
+          text: description,
         }],
       };
     } catch (error) {
@@ -104,9 +116,17 @@ export class ToolRouter {
     const effectiveConfig = this.instanceManager.getConfig();
     const lines = instances.map(inst => {
       const age = Math.round((Date.now() - inst.createdAt) / 1000);
+      const domState = inst.config.domState !== false ? 'on' : 'off';
+      const useExtension = inst.config.extension ?? effectiveConfig.extension;
+      if (useExtension) {
+        return `- ${inst.id}: status=${inst.status}, mode=extension, domState=${domState}, age=${age}s`;
+      }
+      const cdpEndpoint = inst.config.cdpEndpoint || effectiveConfig.cdpEndpoint;
+      if (cdpEndpoint) {
+        return `- ${inst.id}: status=${inst.status}, cdp=${cdpEndpoint}, domState=${domState}, age=${age}s`;
+      }
       const browser = inst.config.browser ?? effectiveConfig.defaultBrowser;
       const headless = inst.config.headless ?? effectiveConfig.defaultHeadless;
-      const domState = inst.config.domState !== false ? 'on' : 'off';
       return `- ${inst.id}: status=${inst.status}, browser=${browser}, ${headless ? 'headless' : 'headed'}, domState=${domState}, age=${age}s`;
     });
 

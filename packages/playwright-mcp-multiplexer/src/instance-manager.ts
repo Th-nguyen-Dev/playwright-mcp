@@ -10,21 +10,37 @@ import type { ManagedInstance, InstanceConfig, MultiplexerConfig } from './types
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Files copied from the Chrome Default/ profile for auth fidelity
-const PROFILE_FILES = [
-  'Cookies', 'Cookies-journal',
-  'Login Data', 'Login Data-journal',
-  'Web Data', 'Web Data-journal',
-  'Preferences', 'Secure Preferences',
-  'Extension Cookies',
-];
-
-// Directories copied recursively
-const PROFILE_DIRS = [
-  'Local Storage',
-  'Session Storage',
-  'IndexedDB',
-];
+function getProfileManifest(browser: string): { files: string[]; dirs: string[] } {
+  if (browser === 'firefox') {
+    return {
+      files: [
+        'cookies.sqlite', 'cookies.sqlite-wal',
+        'key4.db', 'cert9.db',
+        'logins.json', 'logins-backup.json',
+        'permissions.sqlite',
+        'prefs.js',
+      ],
+      dirs: [
+        'storage',
+      ],
+    };
+  }
+  // Chrome / Chromium (default)
+  return {
+    files: [
+      'Cookies', 'Cookies-journal',
+      'Login Data', 'Login Data-journal',
+      'Web Data', 'Web Data-journal',
+      'Preferences', 'Secure Preferences',
+      'Extension Cookies',
+    ],
+    dirs: [
+      'Local Storage',
+      'Session Storage',
+      'IndexedDB',
+    ],
+  };
+}
 
 export class InstanceManager {
   private instances = new Map<string, ManagedInstance>();
@@ -43,6 +59,8 @@ export class InstanceManager {
       cliPath: config.cliPath ?? this.resolveDefaultCliPath(),
       userDataDir: config.userDataDir ?? '',
       profileName: config.profileName ?? 'Default',
+      cdpEndpoint: config.cdpEndpoint ?? '',
+      extension: config.extension ?? false,
     };
   }
 
@@ -180,6 +198,16 @@ export class InstanceManager {
   }
 
   private async buildArgs(instanceId: string, instanceConfig: InstanceConfig): Promise<string[]> {
+    // Extension mode: connect to running Chrome via browser extension
+    const useExtension = instanceConfig.extension ?? this.config.extension;
+    if (useExtension)
+      return ['--extension'];
+
+    // CDP mode: connect to an existing browser, skip all launch/profile logic
+    const cdpEndpoint = instanceConfig.cdpEndpoint || this.config.cdpEndpoint;
+    if (cdpEndpoint)
+      return [`--cdp-endpoint=${cdpEndpoint}`];
+
     const args: string[] = [];
 
     const headless = instanceConfig.headless ?? this.config.defaultHeadless;
@@ -194,18 +222,15 @@ export class InstanceManager {
     // Otherwise fall back to --isolated for a clean ephemeral profile
     const sourceDir = instanceConfig.userDataDir || this.config.userDataDir;
     if (sourceDir) {
-      const profileRoot = await this.copyProfile(instanceId, sourceDir);
+      const profileRoot = await this.copyProfile(instanceId, sourceDir, browser);
       args.push(`--user-data-dir=${profileRoot}`);
     } else {
       args.push('--isolated');
     }
 
-    // Set a custom WM_CLASS so window managers can route these windows
-    // (e.g. Hyprland windowrule to send them to a dedicated workspace)
-    if (!headless) {
-      const configPath = await this.createLaunchConfig(instanceId);
-      args.push(`--config=${configPath}`);
-    }
+    // Always create a launch config with flags needed for profile copying.
+    const configPath = await this.createLaunchConfig(instanceId, headless, browser);
+    args.push(`--config=${configPath}`);
 
     if (process.env.CI && process.platform === 'linux')
       args.push('--no-sandbox');
@@ -216,15 +241,28 @@ export class InstanceManager {
     return args;
   }
 
-  private async createLaunchConfig(instanceId: string): Promise<string> {
+  private async createLaunchConfig(instanceId: string, headless: boolean, browser: string): Promise<string> {
     const tmpDir = path.join(os.tmpdir(), 'pw-mux');
     await fs.promises.mkdir(tmpDir, { recursive: true });
 
     const configPath = path.join(tmpDir, `launch-${instanceId}.json`);
+    let launchArgs: string[] = [];
+
+    if (browser === 'firefox') {
+      // Firefox prefs to reduce automation fingerprint
+      launchArgs.push('-pref', 'dom.webdriver.enabled=false');
+    } else {
+      // Chrome/Chromium: disable DBSC so copied cookies stay valid
+      launchArgs.push('--disable-features=EnableBoundSessionCredentials');
+      // WM_CLASS for window manager routing (e.g. Hyprland workspace rules)
+      if (!headless)
+        launchArgs.push('--class=pw-mux');
+    }
+
     const config = {
       browser: {
         launchOptions: {
-          args: ['--class=pw-mux'],
+          args: launchArgs,
         },
       },
     };
@@ -234,43 +272,64 @@ export class InstanceManager {
     return configPath;
   }
 
-  private async copyProfile(instanceId: string, sourceDir: string): Promise<string> {
+  private async copyProfile(instanceId: string, sourceDir: string, browser: string): Promise<string> {
+    const isFirefox = browser === 'firefox';
     const profileRoot = path.join(os.tmpdir(), 'pw-mux', `profile-${instanceId}`);
-    const destDefault = path.join(profileRoot, 'Default');
-    const srcDefault = path.join(sourceDir, this.config.profileName);
 
-    await fs.promises.mkdir(destDefault, { recursive: true });
+    if (isFirefox) {
+      // Firefox: copy the entire profile directory. Firefox stores session
+      // state across many files (sessionstore.jsonlz4, cookies.sqlite, storage/,
+      // etc.) so cherry-picking is unreliable. Skip cache to keep it fast.
+      await fs.promises.cp(sourceDir, profileRoot, {
+        recursive: true,
+        filter: (src) => {
+          const base = path.basename(src);
+          // Skip cache dirs (large, not needed) and files that cause version conflicts
+          if (base === 'cache2' || base === 'startupCache') return false;
+          // compatibility.ini records Firefox version — causes "older version" warning
+          if (base === 'compatibility.ini') return false;
+          // Lock files from the source profile
+          if (base === 'lock' || base === '.parentlock') return false;
+          return true;
+        },
+      });
+    } else {
+      // Chrome: copy specific auth-relevant files from <userDataDir>/<profileName>/
+      const { files, dirs } = getProfileManifest(browser);
+      const srcDir = path.join(sourceDir, this.config.profileName);
+      const destDir = path.join(profileRoot, 'Default');
 
-    // Copy individual auth-relevant files
-    for (const file of PROFILE_FILES) {
-      const src = path.join(srcDefault, file);
-      const dest = path.join(destDefault, file);
-      try {
-        await fs.promises.copyFile(src, dest);
-      } catch {
-        // File may not exist in every profile — skip silently
+      await fs.promises.mkdir(destDir, { recursive: true });
+
+      for (const file of files) {
+        const src = path.join(srcDir, file);
+        const dest = path.join(destDir, file);
+        try {
+          await fs.promises.copyFile(src, dest);
+        } catch {
+          // File may not exist in every profile — skip silently
+        }
       }
-    }
 
-    // Copy auth-relevant directories recursively
-    for (const dir of PROFILE_DIRS) {
-      const src = path.join(srcDefault, dir);
-      const dest = path.join(destDefault, dir);
-      try {
-        await fs.promises.cp(src, dest, { recursive: true });
-      } catch {
-        // Directory may not exist — skip silently
+      for (const dir of dirs) {
+        const src = path.join(srcDir, dir);
+        const dest = path.join(destDir, dir);
+        try {
+          await fs.promises.cp(src, dest, { recursive: true });
+        } catch {
+          // Directory may not exist — skip silently
+        }
       }
-    }
 
-    // Also copy the top-level Local State file (needed for encrypted cookie decryption)
-    try {
-      await fs.promises.copyFile(
-        path.join(sourceDir, 'Local State'),
-        path.join(profileRoot, 'Local State'),
-      );
-    } catch {
-      // May not exist
+      // Copy top-level Local State (needed for encrypted cookie decryption)
+      try {
+        await fs.promises.copyFile(
+          path.join(sourceDir, 'Local State'),
+          path.join(profileRoot, 'Local State'),
+        );
+      } catch {
+        // May not exist
+      }
     }
 
     this.profileDirs.set(instanceId, profileRoot);

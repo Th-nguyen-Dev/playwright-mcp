@@ -20,6 +20,10 @@ function parseArgs(argv) {
             config.userDataDir = arg.split('=').slice(1).join('=');
         else if (arg.startsWith('--profile='))
             config.profileName = arg.split('=').slice(1).join('=');
+        else if (arg.startsWith('--cdp-endpoint='))
+            config.cdpEndpoint = arg.split('=').slice(1).join('=');
+        else if (arg === '--extension')
+            config.extension = true;
     }
     return config;
 }

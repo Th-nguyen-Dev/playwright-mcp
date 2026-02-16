@@ -18,6 +18,8 @@ export interface InstanceConfig {
   browser?: string;
   storageState?: string;
   userDataDir?: string;
+  cdpEndpoint?: string;
+  extension?: boolean;
   args?: string[];
   domState?: boolean;
 }
@@ -30,6 +32,8 @@ export interface MultiplexerConfig {
   cliPath?: string;
   userDataDir?: string;
   profileName?: string;
+  cdpEndpoint?: string;
+  extension?: boolean;
 }
 
 export interface AugmentedTool extends Tool {
