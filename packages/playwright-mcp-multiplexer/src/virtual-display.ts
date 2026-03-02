@@ -50,9 +50,11 @@ export class VirtualDisplayManager {
 
   private findFreeNum(): number {
     for (let n = DISPLAY_RANGE_START; n <= DISPLAY_RANGE_END; n++) {
-      if (!this.displays.has(n)) return n;
+      if (this.displays.has(n)) continue;
+      if (fs.existsSync(`/tmp/.X${n}-lock`)) continue;
+      return n;
     }
-    throw new Error('No free virtual display slots available (:10–:99 all in use)');
+    throw new Error('No free virtual display slots available (:10–:99 all occupied by this process or system-wide lock files)');
   }
 
   private spawnXvfb(num: number): Promise<void> {
