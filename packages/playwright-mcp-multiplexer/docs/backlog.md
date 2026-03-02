@@ -6,16 +6,16 @@
 
 | Ticket | Title | Priority | Effort | Status | Dependencies | Phase |
 |--------|-------|----------|--------|--------|--------------|-------|
-| [MUX-001](tickets/MUX-001.md) | Remove `--headless` CLI flag that defeats Xvfb anti-detection | P0-Critical | S | DONE | None | 0: Critical Fixes |
-| [MUX-002](tickets/MUX-002.md) | Wait for MCP handshake before calling `listRoots()` | P0-Critical | S | TODO | None | 0: Critical Fixes |
-| [MUX-003](tickets/MUX-003.md) | Normalize error handling in `handleProxyTool` | P1-High | S | DONE | None | 0: Critical Fixes |
+| [MUX-001](tickets/MUX-001.md) | Remove `--headless` CLI flag that defeats Xvfb anti-detection | P0-Critical | S | TODO | None | 0: Critical Fixes |
+| [MUX-002](tickets/MUX-002.md) | Wait for MCP handshake before calling `listRoots()` | P0-Critical | S | COMPLETED | None | 0: Critical Fixes |
+| [MUX-003](tickets/MUX-003.md) | Normalize error handling in `handleProxyTool` | P1-High | S | TODO | None | 0: Critical Fixes |
 | [MUX-004](tickets/MUX-004.md) | Add discovery mutex to prevent concurrent `discoverTools()` races | P2-Medium | S | TODO | None | 1: Stability |
 | [MUX-005](tickets/MUX-005.md) | Check system-wide display numbers before Xvfb allocation | P2-Medium | M | TODO | None | 1: Stability |
-| [MUX-006](tickets/MUX-006.md) | Fix Xvfb exit/resolve race in `spawnXvfb()` | P2-Medium | M | DONE | None | 1: Stability |
-| [MUX-007](tickets/MUX-007.md) | Use `Promise.allSettled()` in `closeAll()` | P2-Medium | S | DONE | None | 1: Stability |
-| [MUX-008](tickets/MUX-008.md) | Remove unused `InitializedNotificationSchema` import | P3-Low | S | TODO | MUX-002 | 2: Cleanup |
-| [MUX-009](tickets/MUX-009.md) | Remove dead `headless` parameter from `createLaunchConfig()` | P3-Low | S | DONE | MUX-001 | 2: Cleanup |
-| [MUX-010](tickets/MUX-010.md) | Prevent double Ctrl+C from interrupting graceful shutdown | P3-Low | S | DONE | None | 2: Cleanup |
+| [MUX-006](tickets/MUX-006.md) | Fix Xvfb exit/resolve race in `spawnXvfb()` | P2-Medium | M | TODO | None | 1: Stability |
+| [MUX-007](tickets/MUX-007.md) | Use `Promise.allSettled()` in `closeAll()` | P2-Medium | S | TODO | None | 1: Stability |
+| [MUX-008](tickets/MUX-008.md) | Remove unused `InitializedNotificationSchema` import | P3-Low | S | COMPLETED | MUX-002 | 2: Cleanup |
+| [MUX-009](tickets/MUX-009.md) | Remove dead `headless` parameter from `createLaunchConfig()` | P3-Low | S | TODO | MUX-001 | 2: Cleanup |
+| [MUX-010](tickets/MUX-010.md) | Prevent double Ctrl+C from interrupting graceful shutdown | P3-Low | S | TODO | None | 2: Cleanup |
 | [MUX-011](tickets/MUX-011.md) | Validate `savePath` in auth export for path traversal | P3-Low | S | TODO | None | 2: Cleanup |
 | [MUX-012](tickets/MUX-012.md) | Replace linear `isProxyTool()` scan with `Set` lookup | P3-Low | S | TODO | None | 2: Cleanup |
 

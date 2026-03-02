@@ -40,13 +40,20 @@ export class MultiplexerServer {
   }
 
   async connect(transport: Transport): Promise<void> {
-    await this.server.connect(transport);
+    // Wait for the MCP handshake to complete before making server->client requests.
+    // Server.connect() sets up I/O but the handshake (initialize/InitializeResult/initialized)
+    // happens asynchronously. listRoots() will fail if called before the handshake.
+    const handshakeComplete = new Promise<void>(resolve => {
+      this.server.setNotificationHandler(InitializedNotificationSchema, () => resolve());
+    });
 
-    // After connection, request workspace roots from the client
-    // The MCP client may have declared roots during initialization
+    await this.server.connect(transport);
+    await handshakeComplete;
+
+    // Now safe to make server->client requests
     try {
       const rootsResult = await this.server.listRoots();
-      if (rootsResult.roots && rootsResult.roots.length > 0) {
+      if (rootsResult.roots?.length > 0) {
         const firstRoot = rootsResult.roots[0];
         if (firstRoot.uri) {
           // Convert file:// URI to path

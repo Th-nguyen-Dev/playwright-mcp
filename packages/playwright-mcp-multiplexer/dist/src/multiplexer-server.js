@@ -1,5 +1,5 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { ListToolsRequestSchema, CallToolRequestSchema, } from '@modelcontextprotocol/sdk/types.js';
+import { ListToolsRequestSchema, CallToolRequestSchema, InitializedNotificationSchema, } from '@modelcontextprotocol/sdk/types.js';
 import { InstanceManager } from './instance-manager.js';
 import { ToolRegistry } from './tool-registry.js';
 import { ToolRouter } from './tool-router.js';
@@ -19,12 +19,18 @@ export class MultiplexerServer {
         this.registerHandlers();
     }
     async connect(transport) {
+        // Wait for the MCP handshake to complete before making server->client requests.
+        // Server.connect() sets up I/O but the handshake (initialize/InitializeResult/initialized)
+        // happens asynchronously. listRoots() will fail if called before the handshake.
+        const handshakeComplete = new Promise(resolve => {
+            this.server.setNotificationHandler(InitializedNotificationSchema, () => resolve());
+        });
         await this.server.connect(transport);
-        // After connection, request workspace roots from the client
-        // The MCP client may have declared roots during initialization
+        await handshakeComplete;
+        // Now safe to make server->client requests
         try {
             const rootsResult = await this.server.listRoots();
-            if (rootsResult.roots && rootsResult.roots.length > 0) {
+            if (rootsResult.roots?.length > 0) {
                 const firstRoot = rootsResult.roots[0];
                 if (firstRoot.uri) {
                     // Convert file:// URI to path
