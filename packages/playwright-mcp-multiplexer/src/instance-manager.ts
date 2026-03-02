@@ -239,10 +239,6 @@ export class InstanceManager {
 
     const args: string[] = [];
 
-    const headless = instanceConfig.headless ?? this.config.defaultHeadless;
-    if (headless)
-      args.push('--headless');
-
     const browser = instanceConfig.browser ?? this.config.defaultBrowser;
     if (browser)
       args.push(`--browser=${browser}`);
@@ -266,7 +262,7 @@ export class InstanceManager {
     }
 
     // Always create a launch config with flags needed for profile copying.
-    const configPath = await this.createLaunchConfig(instanceId, headless, browser);
+    const configPath = await this.createLaunchConfig(instanceId, browser);
     args.push(`--config=${configPath}`);
 
     if (process.env.CI && process.platform === 'linux')
@@ -278,7 +274,7 @@ export class InstanceManager {
     return args;
   }
 
-  private async createLaunchConfig(instanceId: string, headless: boolean, browser: string): Promise<string> {
+  private async createLaunchConfig(instanceId: string, browser: string): Promise<string> {
     const tmpDir = path.join(os.tmpdir(), 'pw-mux');
     await fs.promises.mkdir(tmpDir, { recursive: true });
 

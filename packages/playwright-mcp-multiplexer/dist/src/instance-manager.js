@@ -208,9 +208,6 @@ export class InstanceManager {
         if (cdpEndpoint)
             return [`--cdp-endpoint=${cdpEndpoint}`];
         const args = [];
-        const headless = instanceConfig.headless ?? this.config.defaultHeadless;
-        if (headless)
-            args.push('--headless');
         const browser = instanceConfig.browser ?? this.config.defaultBrowser;
         if (browser)
             args.push(`--browser=${browser}`);
@@ -232,7 +229,7 @@ export class InstanceManager {
             args.push('--isolated');
         }
         // Always create a launch config with flags needed for profile copying.
-        const configPath = await this.createLaunchConfig(instanceId, headless, browser);
+        const configPath = await this.createLaunchConfig(instanceId, browser);
         args.push(`--config=${configPath}`);
         if (process.env.CI && process.platform === 'linux')
             args.push('--no-sandbox');
@@ -240,7 +237,7 @@ export class InstanceManager {
             args.push(...instanceConfig.args);
         return args;
     }
-    async createLaunchConfig(instanceId, headless, browser) {
+    async createLaunchConfig(instanceId, browser) {
         const tmpDir = path.join(os.tmpdir(), 'pw-mux');
         await fs.promises.mkdir(tmpDir, { recursive: true });
         const configPath = path.join(tmpDir, `launch-${instanceId}.json`);
