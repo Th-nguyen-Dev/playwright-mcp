@@ -1,8 +1,19 @@
 #!/usr/bin/env node
 
+// Combined entry point: two modes in one binary.
+//
+// Default (no subcommand): Multiplexer mode — MCP server that manages
+//   multiple browser instances, proxies tool calls by instanceId.
+//
+// "child" subcommand: @playwright/mcp mode — single-browser MCP server.
+//   The multiplexer spawns copies of itself with "child" prepended.
+
+import { createRequire } from 'node:module';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { MultiplexerServer } from './src/multiplexer-server.js';
 import type { MultiplexerConfig } from './src/types.js';
+
+const require = createRequire(import.meta.url);
 
 function parseArgs(argv: string[]): MultiplexerConfig {
   const config: MultiplexerConfig = {};
@@ -35,28 +46,41 @@ function parseArgs(argv: string[]): MultiplexerConfig {
   return config;
 }
 
-async function main() {
-  const config = parseArgs(process.argv);
-  const server = new MultiplexerServer(config);
-  const transport = new StdioServerTransport();
+if (process.argv[2] === 'child') {
+  // ─── @playwright/mcp mode ─────────────────────────────────────────
+  // Strip 'child' so @playwright/mcp's arg parser sees the real flags.
+  process.argv.splice(2, 1);
 
-  // Graceful shutdown — guard against re-entrant signals (e.g. double Ctrl+C)
-  let shuttingDown = false;
+  // playwright's built output is CJS; createRequire bridges ESM → CJS.
+  const { program } = require('playwright-core/lib/utilsBundle');
+  const { decorateCommand } = require('playwright/lib/mcp/program');
 
-  async function shutdown() {
-    if (shuttingDown) return;
-    shuttingDown = true;
-    await server.close();
-    process.exit(0);
+  decorateCommand(program, '0.0.66');
+  void program.parseAsync(process.argv);
+} else {
+  // ─── Multiplexer mode ─────────────────────────────────────────────
+  async function main() {
+    const config = parseArgs(process.argv);
+    const server = new MultiplexerServer(config);
+    const transport = new StdioServerTransport();
+
+    let shuttingDown = false;
+
+    async function shutdown() {
+      if (shuttingDown) return;
+      shuttingDown = true;
+      await server.close();
+      process.exit(0);
+    }
+
+    process.on('SIGINT', shutdown);
+    process.on('SIGTERM', shutdown);
+
+    await server.connect(transport);
   }
 
-  process.on('SIGINT', shutdown);
-  process.on('SIGTERM', shutdown);
-
-  await server.connect(transport);
+  main().catch(error => {
+    console.error('Fatal error:', error);
+    process.exit(1);
+  });
 }
-
-main().catch(error => {
-  console.error('Fatal error:', error);
-  process.exit(1);
-});

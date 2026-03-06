@@ -1,13 +1,9 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import os from 'node:os';
-import { createRequire } from 'node:module';
-import { fileURLToPath } from 'node:url';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { VirtualDisplayManager } from './virtual-display.js';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 function getProfileManifest(browser) {
     if (browser === 'firefox') {
         return {
@@ -54,7 +50,7 @@ export class InstanceManager {
             defaultHeadless: config.defaultHeadless ?? true,
             defaultBrowser: config.defaultBrowser ?? 'chrome',
             authDir: config.authDir ?? path.join(os.homedir(), '.pride-riot', 'auth'),
-            cliPath: config.cliPath ?? this.resolveDefaultCliPath(),
+            cliPath: config.cliPath ?? '',
             userDataDir: config.userDataDir ?? '',
             profileName: config.profileName ?? 'Default',
             cdpEndpoint: config.cdpEndpoint ?? '',
@@ -68,18 +64,6 @@ export class InstanceManager {
      */
     setWorkspaceRoot(workspaceRoot) {
         this.workspaceRoot = workspaceRoot;
-    }
-    resolveDefaultCliPath() {
-        // Resolve the sibling @playwright/mcp package's cli.js
-        try {
-            const require = createRequire(import.meta.url);
-            const mcpPkgPath = require.resolve('@playwright/mcp/package.json');
-            return path.join(path.dirname(mcpPkgPath), 'cli.js');
-        }
-        catch {
-            // Fallback: relative path within monorepo
-            return path.join(__dirname, '..', '..', 'playwright-mcp', 'cli.js');
-        }
     }
     async create(instanceConfig = {}) {
         if (this.instances.size >= this.config.maxInstances) {
@@ -132,9 +116,12 @@ export class InstanceManager {
                 if (this.workspaceRoot)
                     env.PW_DOM_STATE_WORKSPACE = this.workspaceRoot;
             }
+            // Spawn a child @playwright/mcp instance. Uses the same entry point
+            // (this script) with "child" prepended so it enters @playwright/mcp mode.
+            // Works in both dev (node dist/cli.js) and production (node cli.bundle.cjs).
             const transport = new StdioClientTransport({
-                command: 'node',
-                args: [this.config.cliPath, ...args],
+                command: process.execPath,
+                args: [process.argv[1], 'child', ...args],
                 stderr: 'pipe',
                 env,
             });

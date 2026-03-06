@@ -14,7 +14,6 @@ export declare class InstanceManager {
      * Called by the multiplexer server during initialization.
      */
     setWorkspaceRoot(workspaceRoot: string | undefined): void;
-    private resolveDefaultCliPath;
     create(instanceConfig?: InstanceConfig): Promise<ManagedInstance>;
     get(id: string): ManagedInstance | undefined;
     getOrThrow(id: string): ManagedInstance;

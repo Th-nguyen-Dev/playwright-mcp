@@ -1,6 +1,15 @@
 #!/usr/bin/env node
+// Combined entry point: two modes in one binary.
+//
+// Default (no subcommand): Multiplexer mode — MCP server that manages
+//   multiple browser instances, proxies tool calls by instanceId.
+//
+// "child" subcommand: @playwright/mcp mode — single-browser MCP server.
+//   The multiplexer spawns copies of itself with "child" prepended.
+import { createRequire } from 'node:module';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { MultiplexerServer } from './src/multiplexer-server.js';
+const require = createRequire(import.meta.url);
 function parseArgs(argv) {
     const config = {};
     for (const arg of argv.slice(2)) {
@@ -29,25 +38,37 @@ function parseArgs(argv) {
     }
     return config;
 }
-async function main() {
-    const config = parseArgs(process.argv);
-    const server = new MultiplexerServer(config);
-    const transport = new StdioServerTransport();
-    // Graceful shutdown — guard against re-entrant signals (e.g. double Ctrl+C)
-    let shuttingDown = false;
-    async function shutdown() {
-        if (shuttingDown)
-            return;
-        shuttingDown = true;
-        await server.close();
-        process.exit(0);
-    }
-    process.on('SIGINT', shutdown);
-    process.on('SIGTERM', shutdown);
-    await server.connect(transport);
+if (process.argv[2] === 'child') {
+    // ─── @playwright/mcp mode ─────────────────────────────────────────
+    // Strip 'child' so @playwright/mcp's arg parser sees the real flags.
+    process.argv.splice(2, 1);
+    // playwright's built output is CJS; createRequire bridges ESM → CJS.
+    const { program } = require('playwright-core/lib/utilsBundle');
+    const { decorateCommand } = require('playwright/lib/mcp/program');
+    decorateCommand(program, '0.0.66');
+    void program.parseAsync(process.argv);
 }
-main().catch(error => {
-    console.error('Fatal error:', error);
-    process.exit(1);
-});
+else {
+    // ─── Multiplexer mode ─────────────────────────────────────────────
+    async function main() {
+        const config = parseArgs(process.argv);
+        const server = new MultiplexerServer(config);
+        const transport = new StdioServerTransport();
+        let shuttingDown = false;
+        async function shutdown() {
+            if (shuttingDown)
+                return;
+            shuttingDown = true;
+            await server.close();
+            process.exit(0);
+        }
+        process.on('SIGINT', shutdown);
+        process.on('SIGTERM', shutdown);
+        await server.connect(transport);
+    }
+    main().catch(error => {
+        console.error('Fatal error:', error);
+        process.exit(1);
+    });
+}
 //# sourceMappingURL=cli.js.map
