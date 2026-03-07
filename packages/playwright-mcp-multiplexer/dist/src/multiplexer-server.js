@@ -1,10 +1,13 @@
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { ListToolsRequestSchema, CallToolRequestSchema, InitializedNotificationSchema, } from '@modelcontextprotocol/sdk/types.js';
-import { InstanceManager } from './instance-manager.js';
-import { ToolRegistry } from './tool-registry.js';
-import { ToolRouter } from './tool-router.js';
-import { AuthManager } from './auth-manager.js';
-export class MultiplexerServer {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.MultiplexerServer = void 0;
+const index_js_1 = require("@modelcontextprotocol/sdk/server/index.js");
+const types_js_1 = require("@modelcontextprotocol/sdk/types.js");
+const instance_manager_js_1 = require("./instance-manager.js");
+const tool_registry_js_1 = require("./tool-registry.js");
+const tool_router_js_1 = require("./tool-router.js");
+const auth_manager_js_1 = require("./auth-manager.js");
+class MultiplexerServer {
     server;
     instanceManager;
     toolRegistry;
@@ -12,11 +15,11 @@ export class MultiplexerServer {
     authManager;
     discoveryPromise = null;
     constructor(config = {}) {
-        this.instanceManager = new InstanceManager(config);
-        this.toolRegistry = new ToolRegistry();
-        this.authManager = new AuthManager(this.instanceManager.getConfig().authDir);
-        this.toolRouter = new ToolRouter(this.instanceManager, this.toolRegistry, this.authManager);
-        this.server = new Server({ name: 'playwright-mcp-multiplexer', version: '0.0.1' }, { capabilities: { tools: {} } });
+        this.instanceManager = new instance_manager_js_1.InstanceManager(config);
+        this.toolRegistry = new tool_registry_js_1.ToolRegistry();
+        this.authManager = new auth_manager_js_1.AuthManager(this.instanceManager.getConfig().authDir);
+        this.toolRouter = new tool_router_js_1.ToolRouter(this.instanceManager, this.toolRegistry, this.authManager);
+        this.server = new index_js_1.Server({ name: 'playwright-mcp-multiplexer', version: '0.0.1' }, { capabilities: { tools: {} } });
         this.registerHandlers();
     }
     async connect(transport) {
@@ -24,7 +27,7 @@ export class MultiplexerServer {
         // Server.connect() sets up I/O but the handshake (initialize/InitializeResult/initialized)
         // happens asynchronously. listRoots() will fail if called before the handshake.
         const handshakeComplete = new Promise(resolve => {
-            this.server.setNotificationHandler(InitializedNotificationSchema, () => resolve());
+            this.server.setNotificationHandler(types_js_1.InitializedNotificationSchema, () => resolve());
         });
         await this.server.connect(transport);
         await handshakeComplete;
@@ -62,14 +65,14 @@ export class MultiplexerServer {
         await this.server.close();
     }
     registerHandlers() {
-        this.server.setRequestHandler(ListToolsRequestSchema, async () => {
+        this.server.setRequestHandler(types_js_1.ListToolsRequestSchema, async () => {
             // Lazy discovery: on first call, spawn a probe instance to discover tools
             if (!this.toolRegistry.isInitialized()) {
                 await this.ensureToolsDiscovered();
             }
             return { tools: this.toolRegistry.getTools() };
         });
-        this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
+        this.server.setRequestHandler(types_js_1.CallToolRequestSchema, async (request) => {
             const { name, arguments: args } = request.params;
             // Ensure tools are discovered before routing
             if (!this.toolRegistry.isInitialized()) {
@@ -117,4 +120,5 @@ export class MultiplexerServer {
         }
     }
 }
+exports.MultiplexerServer = MultiplexerServer;
 //# sourceMappingURL=multiplexer-server.js.map

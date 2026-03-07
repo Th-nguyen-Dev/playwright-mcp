@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ToolRegistry = void 0;
 const MANAGEMENT_TOOLS = [
     {
         name: 'instance_create',
@@ -56,7 +59,7 @@ const MANAGEMENT_TOOLS = [
     },
 ];
 const MANAGEMENT_TOOL_NAMES = new Set(MANAGEMENT_TOOLS.map(t => t.name));
-export class ToolRegistry {
+class ToolRegistry {
     proxyTools = [];
     proxyToolNames = new Set();
     allTools = [];
@@ -101,4 +104,5 @@ export class ToolRegistry {
         };
     }
 }
+exports.ToolRegistry = ToolRegistry;
 //# sourceMappingURL=tool-registry.js.map

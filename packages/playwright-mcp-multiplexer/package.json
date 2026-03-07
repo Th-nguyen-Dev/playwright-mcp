@@ -6,7 +6,6 @@
   "engines": {
     "node": ">=18"
   },
-  "type": "module",
   "scripts": {
     "build": "tsc",
     "test": "playwright test",

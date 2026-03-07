@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+"use strict";
 // Combined entry point: two modes in one binary.
 //
 // Default (no subcommand): Multiplexer mode — MCP server that manages
@@ -6,10 +7,9 @@
 //
 // "child" subcommand: @playwright/mcp mode — single-browser MCP server.
 //   The multiplexer spawns copies of itself with "child" prepended.
-import { createRequire } from 'node:module';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { MultiplexerServer } from './src/multiplexer-server.js';
-const require = createRequire(import.meta.url);
+Object.defineProperty(exports, "__esModule", { value: true });
+const stdio_js_1 = require("@modelcontextprotocol/sdk/server/stdio.js");
+const multiplexer_server_js_1 = require("./src/multiplexer-server.js");
 function parseArgs(argv) {
     const config = {};
     for (const arg of argv.slice(2)) {
@@ -52,8 +52,8 @@ else {
     // ─── Multiplexer mode ─────────────────────────────────────────────
     async function main() {
         const config = parseArgs(process.argv);
-        const server = new MultiplexerServer(config);
-        const transport = new StdioServerTransport();
+        const server = new multiplexer_server_js_1.MultiplexerServer(config);
+        const transport = new stdio_js_1.StdioServerTransport();
         let shuttingDown = false;
         async function shutdown() {
             if (shuttingDown)

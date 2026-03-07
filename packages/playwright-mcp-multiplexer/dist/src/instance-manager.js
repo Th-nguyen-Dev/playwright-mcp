@@ -1,9 +1,15 @@
-import path from 'node:path';
-import fs from 'node:fs';
-import os from 'node:os';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { VirtualDisplayManager } from './virtual-display.js';
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.InstanceManager = void 0;
+const node_path_1 = __importDefault(require("node:path"));
+const node_fs_1 = __importDefault(require("node:fs"));
+const node_os_1 = __importDefault(require("node:os"));
+const stdio_js_1 = require("@modelcontextprotocol/sdk/client/stdio.js");
+const index_js_1 = require("@modelcontextprotocol/sdk/client/index.js");
+const virtual_display_js_1 = require("./virtual-display.js");
 function getProfileManifest(browser) {
     if (browser === 'firefox') {
         return {
@@ -35,12 +41,12 @@ function getProfileManifest(browser) {
         ],
     };
 }
-export class InstanceManager {
+class InstanceManager {
     instances = new Map();
     profileDirs = new Map(); // instanceId → temp profile root
     configFiles = new Map(); // instanceId → temp config file path
     virtualDisplays = new Map(); // instanceId → ':N' display
-    virtualDisplayManager = new VirtualDisplayManager();
+    virtualDisplayManager = new virtual_display_js_1.VirtualDisplayManager();
     nextId = 1;
     config;
     workspaceRoot;
@@ -49,7 +55,7 @@ export class InstanceManager {
             maxInstances: config.maxInstances ?? 10,
             defaultHeadless: config.defaultHeadless ?? true,
             defaultBrowser: config.defaultBrowser ?? 'chrome',
-            authDir: config.authDir ?? path.join(os.homedir(), '.pride-riot', 'auth'),
+            authDir: config.authDir ?? node_path_1.default.join(node_os_1.default.homedir(), '.pride-riot', 'auth'),
             cliPath: config.cliPath ?? '',
             userDataDir: config.userDataDir ?? '',
             profileName: config.profileName ?? 'Default',
@@ -119,13 +125,13 @@ export class InstanceManager {
             // Spawn a child @playwright/mcp instance. Uses the same entry point
             // (this script) with "child" prepended so it enters @playwright/mcp mode.
             // Works in both dev (node dist/cli.js) and production (node cli.bundle.cjs).
-            const transport = new StdioClientTransport({
+            const transport = new stdio_js_1.StdioClientTransport({
                 command: process.execPath,
                 args: [process.argv[1], 'child', ...args],
                 stderr: 'pipe',
                 env,
             });
-            const client = new Client({
+            const client = new index_js_1.Client({
                 name: `multiplexer-${id}`,
                 version: '1.0.0',
             });
@@ -231,9 +237,9 @@ export class InstanceManager {
         return args;
     }
     async createLaunchConfig(instanceId, browser) {
-        const tmpDir = path.join(os.tmpdir(), 'pw-mux');
-        await fs.promises.mkdir(tmpDir, { recursive: true });
-        const configPath = path.join(tmpDir, `launch-${instanceId}.json`);
+        const tmpDir = node_path_1.default.join(node_os_1.default.tmpdir(), 'pw-mux');
+        await node_fs_1.default.promises.mkdir(tmpDir, { recursive: true });
+        const configPath = node_path_1.default.join(tmpDir, `launch-${instanceId}.json`);
         let launchArgs = [];
         if (browser === 'firefox') {
             // Firefox prefs to reduce automation fingerprint
@@ -257,21 +263,21 @@ export class InstanceManager {
                 },
             },
         };
-        await fs.promises.writeFile(configPath, JSON.stringify(config), { mode: 0o600 });
+        await node_fs_1.default.promises.writeFile(configPath, JSON.stringify(config), { mode: 0o600 });
         this.configFiles.set(instanceId, configPath);
         return configPath;
     }
     async copyProfile(instanceId, sourceDir, browser) {
         const isFirefox = browser === 'firefox';
-        const profileRoot = path.join(os.tmpdir(), 'pw-mux', `profile-${instanceId}`);
+        const profileRoot = node_path_1.default.join(node_os_1.default.tmpdir(), 'pw-mux', `profile-${instanceId}`);
         if (isFirefox) {
             // Firefox: copy the entire profile directory. Firefox stores session
             // state across many files (sessionstore.jsonlz4, cookies.sqlite, storage/,
             // etc.) so cherry-picking is unreliable. Skip cache to keep it fast.
-            await fs.promises.cp(sourceDir, profileRoot, {
+            await node_fs_1.default.promises.cp(sourceDir, profileRoot, {
                 recursive: true,
                 filter: (src) => {
-                    const base = path.basename(src);
+                    const base = node_path_1.default.basename(src);
                     // Skip cache dirs (large, not needed) and files that cause version conflicts
                     if (base === 'cache2' || base === 'startupCache')
                         return false;
@@ -288,24 +294,24 @@ export class InstanceManager {
         else {
             // Chrome: copy specific auth-relevant files from <userDataDir>/<profileName>/
             const { files, dirs } = getProfileManifest(browser);
-            const srcDir = path.join(sourceDir, this.config.profileName);
-            const destDir = path.join(profileRoot, 'Default');
-            await fs.promises.mkdir(destDir, { recursive: true });
+            const srcDir = node_path_1.default.join(sourceDir, this.config.profileName);
+            const destDir = node_path_1.default.join(profileRoot, 'Default');
+            await node_fs_1.default.promises.mkdir(destDir, { recursive: true });
             for (const file of files) {
-                const src = path.join(srcDir, file);
-                const dest = path.join(destDir, file);
+                const src = node_path_1.default.join(srcDir, file);
+                const dest = node_path_1.default.join(destDir, file);
                 try {
-                    await fs.promises.copyFile(src, dest);
+                    await node_fs_1.default.promises.copyFile(src, dest);
                 }
                 catch {
                     // File may not exist in every profile — skip silently
                 }
             }
             for (const dir of dirs) {
-                const src = path.join(srcDir, dir);
-                const dest = path.join(destDir, dir);
+                const src = node_path_1.default.join(srcDir, dir);
+                const dest = node_path_1.default.join(destDir, dir);
                 try {
-                    await fs.promises.cp(src, dest, { recursive: true });
+                    await node_fs_1.default.promises.cp(src, dest, { recursive: true });
                 }
                 catch {
                     // Directory may not exist — skip silently
@@ -313,7 +319,7 @@ export class InstanceManager {
             }
             // Copy top-level Local State (needed for encrypted cookie decryption)
             try {
-                await fs.promises.copyFile(path.join(sourceDir, 'Local State'), path.join(profileRoot, 'Local State'));
+                await node_fs_1.default.promises.copyFile(node_path_1.default.join(sourceDir, 'Local State'), node_path_1.default.join(profileRoot, 'Local State'));
             }
             catch {
                 // May not exist
@@ -327,7 +333,7 @@ export class InstanceManager {
         if (profileDir) {
             this.profileDirs.delete(instanceId);
             try {
-                await fs.promises.rm(profileDir, { recursive: true, force: true });
+                await node_fs_1.default.promises.rm(profileDir, { recursive: true, force: true });
             }
             catch {
                 // Best-effort cleanup
@@ -336,8 +342,9 @@ export class InstanceManager {
         const configFile = this.configFiles.get(instanceId);
         if (configFile) {
             this.configFiles.delete(instanceId);
-            await fs.promises.unlink(configFile).catch(() => { });
+            await node_fs_1.default.promises.unlink(configFile).catch(() => { });
         }
     }
 }
+exports.InstanceManager = InstanceManager;
 //# sourceMappingURL=instance-manager.js.map

@@ -1,4 +1,7 @@
-export class ToolRouter {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ToolRouter = void 0;
+class ToolRouter {
     instanceManager;
     toolRegistry;
     authManager;
@@ -183,4 +186,5 @@ export class ToolRouter {
         }
     }
 }
+exports.ToolRouter = ToolRouter;
 //# sourceMappingURL=tool-router.js.map

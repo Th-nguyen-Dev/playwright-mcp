@@ -8,12 +8,9 @@
 // "child" subcommand: @playwright/mcp mode — single-browser MCP server.
 //   The multiplexer spawns copies of itself with "child" prepended.
 
-import { createRequire } from 'node:module';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { MultiplexerServer } from './src/multiplexer-server.js';
 import type { MultiplexerConfig } from './src/types.js';
-
-const require = createRequire(import.meta.url);
 
 function parseArgs(argv: string[]): MultiplexerConfig {
   const config: MultiplexerConfig = {};

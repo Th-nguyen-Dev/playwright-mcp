@@ -1,5 +1,11 @@
-import fs from 'node:fs';
-import { spawn } from 'node:child_process';
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.VirtualDisplayManager = void 0;
+const node_fs_1 = __importDefault(require("node:fs"));
+const node_child_process_1 = require("node:child_process");
 const DISPLAY_RANGE_START = 10;
 const DISPLAY_RANGE_END = 99;
 /**
@@ -9,7 +15,7 @@ const DISPLAY_RANGE_END = 99;
  * number (:10, :11, ...). Chrome runs in headed mode on that virtual display —
  * same rendering engine as a visible window, invisible to the user.
  */
-export class VirtualDisplayManager {
+class VirtualDisplayManager {
     displays = new Map(); // displayNum → Xvfb process
     pending = new Set(); // display nums being spawned (not yet in displays)
     async allocate() {
@@ -59,7 +65,7 @@ export class VirtualDisplayManager {
                 continue;
             if (this.pending.has(n))
                 continue;
-            if (fs.existsSync(`/tmp/.X${n}-lock`))
+            if (node_fs_1.default.existsSync(`/tmp/.X${n}-lock`))
                 continue;
             return n;
         }
@@ -74,7 +80,7 @@ export class VirtualDisplayManager {
                     fn();
                 }
             };
-            const proc = spawn('Xvfb', [`:${num}`, '-screen', '0', '1920x1080x24', '-ac'], {
+            const proc = (0, node_child_process_1.spawn)('Xvfb', [`:${num}`, '-screen', '0', '1920x1080x24', '-ac'], {
                 stdio: 'ignore',
                 detached: false,
             });
@@ -104,7 +110,7 @@ export class VirtualDisplayManager {
         const deadline = Date.now() + timeoutMs;
         while (Date.now() < deadline) {
             try {
-                await fs.promises.access(lockFile);
+                await node_fs_1.default.promises.access(lockFile);
                 return; // lock file exists — Xvfb is ready
             }
             catch {
@@ -114,4 +120,5 @@ export class VirtualDisplayManager {
         throw new Error(`Xvfb :${num} did not start within ${timeoutMs}ms`);
     }
 }
+exports.VirtualDisplayManager = VirtualDisplayManager;
 //# sourceMappingURL=virtual-display.js.map
