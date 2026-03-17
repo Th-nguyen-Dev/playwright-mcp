@@ -109,9 +109,14 @@ class MultiplexerServer {
             await this.toolRegistry.discoverTools(existing.client);
             return;
         }
-        // Spawn a minimal probe: --isolated, headless, no profile copy, no extension.
-        // userDataDir: null forces --isolated regardless of server config.
-        const probe = await this.instanceManager.create({ headless: true, userDataDir: null, extension: false });
+        // Spawn a minimal probe for tool discovery. In Electron mode the probe
+        // connects via CDP (inherited from server config) — no need to override
+        // userDataDir since CDP mode skips profile management entirely.
+        // In normal mode, userDataDir: null forces --isolated (no profile copy).
+        const probeConfig = this.instanceManager.getConfig().electronMode
+            ? { headless: true, extension: false, domState: false }
+            : { headless: true, userDataDir: null, extension: false };
+        const probe = await this.instanceManager.create(probeConfig);
         try {
             await this.toolRegistry.discoverTools(probe.client);
         }

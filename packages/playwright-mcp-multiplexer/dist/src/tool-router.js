@@ -85,6 +85,9 @@ class ToolRouter {
             if (useExtension) {
                 description = `Created browser instance "${instance.id}" (extension)`;
             }
+            else if (effectiveConfig.electronMode && cdpEndpoint) {
+                description = `Created browser instance "${instance.id}" (Electron CDP: ${cdpEndpoint}, isolated context)`;
+            }
             else if (cdpEndpoint) {
                 description = `Created browser instance "${instance.id}" (CDP: ${cdpEndpoint})`;
             }
@@ -123,6 +126,9 @@ class ToolRouter {
                 return `- ${inst.id}: status=${inst.status}, mode=extension, domState=${domState}, age=${age}s`;
             }
             const cdpEndpoint = inst.config.cdpEndpoint || effectiveConfig.cdpEndpoint;
+            if (effectiveConfig.electronMode && cdpEndpoint) {
+                return `- ${inst.id}: status=${inst.status}, mode=electron-cdp, isolated=true, domState=${domState}, age=${age}s`;
+            }
             if (cdpEndpoint) {
                 return `- ${inst.id}: status=${inst.status}, cdp=${cdpEndpoint}, domState=${domState}, age=${age}s`;
             }

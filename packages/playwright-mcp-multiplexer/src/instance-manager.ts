@@ -49,6 +49,7 @@ export class InstanceManager {
   private workspaceRoot: string | undefined;
 
   constructor(config: MultiplexerConfig = {}) {
+    const electronMode = config.electronMode ?? false;
     this.config = {
       maxInstances: config.maxInstances ?? 10,
       defaultHeadless: config.defaultHeadless ?? true,
@@ -57,9 +58,10 @@ export class InstanceManager {
       cliPath: config.cliPath ?? '',
       userDataDir: config.userDataDir ?? '',
       profileName: config.profileName ?? 'Default',
-      cdpEndpoint: config.cdpEndpoint ?? '',
+      cdpEndpoint: config.cdpEndpoint ?? (electronMode ? 'http://127.0.0.1:9222' : ''),
       extension: config.extension ?? false,
       executablePath: config.executablePath ?? '',
+      electronMode,
     };
   }
 
@@ -98,9 +100,10 @@ export class InstanceManager {
     try {
       const headless = instanceConfig.headless ?? this.config.defaultHeadless;
 
+      // In Electron mode, Electron manages its own window/display — skip Xvfb.
       // Allocate a virtual display for headless instances so Chrome still runs
       // in headed mode (same rendering, same fingerprint) but stays invisible.
-      if (headless) {
+      if (headless && !this.config.electronMode) {
         const display = await this.virtualDisplayManager.allocate();
         this.virtualDisplays.set(id, display);
       }
@@ -121,8 +124,10 @@ export class InstanceManager {
       }
       // Visible: inherit DISPLAY/WAYLAND_DISPLAY from parent as-is
 
-      // DOM state toggle: explicitly disable or enable per instance
-      if (instanceConfig.domState === false) {
+      // DOM state toggle: explicitly disable or enable per instance.
+      // In Electron mode, DOM state is off by default (Electron owns the UI).
+      const domStateEnabled = instanceConfig.domState ?? (this.config.electronMode ? false : true);
+      if (!domStateEnabled) {
         env.PW_DOM_STATE_DISABLED = '1';
       } else {
         env.PW_DOM_STATE_INSTANCE_ID = id;
@@ -227,8 +232,17 @@ export class InstanceManager {
 
     // CDP mode: connect to an existing browser, skip all launch/profile logic
     const cdpEndpoint = instanceConfig.cdpEndpoint || this.config.cdpEndpoint;
-    if (cdpEndpoint)
-      return [`--cdp-endpoint=${cdpEndpoint}`];
+    if (cdpEndpoint) {
+      const args = [`--cdp-endpoint=${cdpEndpoint}`];
+      // In Electron mode, each instance needs its own isolated BrowserContext
+      // so that cookies, localStorage, and other state don't leak between
+      // automation sessions. The --isolated flag tells @playwright/mcp's
+      // CdpContextFactory to call browser.newContext() instead of reusing
+      // the default context (browser.contexts()[0]).
+      if (this.config.electronMode)
+        args.push('--isolated');
+      return args;
+    }
 
     const args: string[] = [];
 

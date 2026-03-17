@@ -38,6 +38,8 @@ function parseArgs(argv: string[]): MultiplexerConfig {
       config.extension = true;
     else if (arg.startsWith('--executable-path='))
       config.executablePath = arg.split('=').slice(1).join('=');
+    else if (arg === '--electron-mode')
+      config.electronMode = true;
   }
 
   return config;

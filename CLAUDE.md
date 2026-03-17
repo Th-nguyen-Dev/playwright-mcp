@@ -132,6 +132,7 @@ Attributes are in canonical order: `id` → `type` → `name` → `role` → `ar
 --cdp-endpoint=<url>       Connect all instances to an existing Chrome via CDP
 --extension                Connect via Playwright MCP Bridge browser extension
 --executable-path=<path>   Custom browser executable path
+--electron-mode            Electron integration: use CDP + isolated contexts, skip profile mgmt and Xvfb
 ```
 
 ## Key Conventions and Gotchas
@@ -168,3 +169,5 @@ Attributes are in canonical order: `id` → `type` → `name` → `role` → `ar
 **`auth_export_state` path security:** `savePath` must resolve to a path within `authDir`. The check uses `path.resolve()` on both sides and verifies with `startsWith(authDirResolved + path.sep)` — the `path.sep` suffix prevents prefix confusion (e.g. `/auth-evil` passing against `/auth`).
 
 **`MultiplexerServer.connect()` ordering:** `server.connect()` starts I/O but the MCP handshake is async. The server waits for the `initialized` notification before calling `server.listRoots()` — calling `listRoots()` before the handshake completes will fail.
+
+**Electron mode (`--electron-mode`):** Connects to Electron's built-in Chromium via CDP. Each instance gets `--cdp-endpoint` + `--isolated` so Playwright creates a new `BrowserContext` per instance (via `CdpContextFactory` calling `browser.newContext()`). Skips profile management (no file copying), Xvfb (Electron owns the display), and launch config generation. DOM state defaults to off. If no `--cdp-endpoint` is provided, defaults to `http://127.0.0.1:9222`. See `Project-Mercury-V2/docs/electron-playwright-integration.md` for the full architecture.

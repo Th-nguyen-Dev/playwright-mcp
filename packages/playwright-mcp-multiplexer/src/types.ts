@@ -36,6 +36,20 @@ export interface MultiplexerConfig {
   cdpEndpoint?: string;
   extension?: boolean;
   executablePath?: string;
+  /**
+   * Electron mode: connect to Electron's built-in Chromium via CDP.
+   *
+   * When enabled:
+   *   - Each instance connects to the CDP endpoint and creates an isolated
+   *     BrowserContext (via --isolated), providing session isolation
+   *     (separate cookies, localStorage, etc.) without spawning new Chrome
+   *     processes.
+   *   - Profile management is skipped entirely (no profile dirs, no copying).
+   *   - No Xvfb virtual displays are needed (Electron manages its own window).
+   *   - DOM state output is disabled by default.
+   *   - If no cdpEndpoint is configured, defaults to http://127.0.0.1:9222.
+   */
+  electronMode?: boolean;
 }
 
 export interface AugmentedTool extends Tool {
