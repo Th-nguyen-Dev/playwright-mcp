@@ -139,7 +139,7 @@ export class MultiplexerServer {
 
     // Spawn a minimal probe: --isolated, headless, no profile copy, no extension.
     // userDataDir: null forces --isolated regardless of server config.
-    const probe = await this.instanceManager.create({ headless: true, userDataDir: null, extension: false });
+    const probe = await this.instanceManager.create({ headless: false, userDataDir: null, extension: false });
     try {
       await this.toolRegistry.discoverTools(probe.client);
     } finally {
