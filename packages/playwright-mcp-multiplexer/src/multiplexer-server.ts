@@ -143,7 +143,7 @@ export class MultiplexerServer {
     // In normal mode, userDataDir: null forces --isolated (no profile copy).
     const probeConfig = this.instanceManager.getConfig().electronMode
       ? { headless: true, extension: false, domState: false }
-      : { headless: true, userDataDir: null as string | null, extension: false };
+      : { headless: false, userDataDir: null as string | null, extension: false };
     const probe = await this.instanceManager.create(probeConfig);
     try {
       await this.toolRegistry.discoverTools(probe.client);

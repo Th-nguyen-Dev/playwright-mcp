@@ -31,6 +31,7 @@ export interface InstanceConfig {
   domState?: boolean;
   /** Target URL for page filtering in electron mode */
   targetUrl?: string;
+  initScript?: string;
 }
 
 export interface MultiplexerConfig {
@@ -60,6 +61,7 @@ export interface MultiplexerConfig {
   electronMode?: boolean;
   /** URL of the Electron ViewManager HTTP API (default: http://127.0.0.1:3002) */
   viewManagerUrl?: string;
+  initScript?: string;
 }
 
 export interface AugmentedTool extends Tool {

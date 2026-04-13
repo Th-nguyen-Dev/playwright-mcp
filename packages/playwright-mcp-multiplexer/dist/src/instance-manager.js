@@ -85,6 +85,7 @@ class InstanceManager {
             executablePath: config.executablePath ?? '',
             electronMode,
             viewManagerUrl: config.viewManagerUrl ?? 'http://127.0.0.1:3002',
+            initScript: config.initScript ?? '',
         };
     }
     /**
@@ -298,6 +299,9 @@ class InstanceManager {
             args.push('--no-sandbox');
         if (instanceConfig.args)
             args.push(...instanceConfig.args);
+        const initScript = instanceConfig.initScript ?? this.config.initScript;
+        if (initScript)
+            args.push(`--init-script=${initScript}`);
         return args;
     }
     async createLaunchConfig(instanceId, browser) {

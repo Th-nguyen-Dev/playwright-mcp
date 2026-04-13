@@ -86,6 +86,7 @@ export class InstanceManager {
       executablePath: config.executablePath ?? '',
       electronMode,
       viewManagerUrl: config.viewManagerUrl ?? 'http://127.0.0.1:3002',
+      initScript: config.initScript ?? '',
     };
   }
 
@@ -333,6 +334,10 @@ export class InstanceManager {
 
     if (instanceConfig.args)
       args.push(...instanceConfig.args);
+
+    const initScript = instanceConfig.initScript ?? this.config.initScript;
+    if (initScript)
+      args.push(`--init-script=${initScript}`);
 
     return args;
   }

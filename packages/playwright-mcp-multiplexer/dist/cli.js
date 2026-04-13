@@ -39,6 +39,8 @@ function parseArgs(argv) {
             config.electronMode = true;
         else if (arg.startsWith('--view-manager-url='))
             config.viewManagerUrl = arg.split('=').slice(1).join('=');
+        else if (arg.startsWith('--init-script='))
+            config.initScript = arg.split('=').slice(1).join('=');
     }
     return config;
 }
