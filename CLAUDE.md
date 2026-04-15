@@ -137,7 +137,7 @@ Attributes are in canonical order: `id` → `type` → `name` → `role` → `ar
 
 ## Key Conventions and Gotchas
 
-**Module system:** The multiplexer is CommonJS (`"module": "CommonJS"`, `"moduleResolution": "Node"` in tsconfig). Imports do NOT use `.js` extensions. The `cli.ts` uses `require()` directly (via `esModuleInterop`) to call into the CJS output of `@playwright/mcp`.
+**Module system:** The multiplexer is CommonJS (`"module": "node16"`, `"moduleResolution": "node16"` in tsconfig; no `"type": "module"` in `package.json` so TypeScript treats all `.ts` files as CJS). Relative imports use `.js` extensions. The `cli.ts` uses `require()` directly to call into the CJS output of `@playwright/mcp`.
 
 **@playwright/mcp ships plain JS/DTS** — no TypeScript source. Do not look for `.ts` files in `packages/playwright-mcp/`.
 
